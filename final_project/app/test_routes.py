@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
-from app.models import db, Curso
+from app.models import db, Evento
+from datetime import datetime
 
-# Blueprint solo con endpoints de prueba para cursos
+# Blueprint solo con endpoints de prueba para eventos
 main = Blueprint('main', __name__)
 
 @main.route('/') # Ambas rutas llevan al mismo lugar
@@ -12,82 +13,80 @@ def index():
     """
     return '<h1>Corriendo en Modo de Prueba.</h1>'
 
-@main.route('/cursos', methods=['GET'])
-def listar_cursos():
+@main.route('/eventos', methods=['GET'])
+def listar_eventos():
     """
-    Retorna una lista de cursos (JSON).
+    Retorna una lista de eventos (JSON).
     """
-    cursos = Curso.query.all()
-
+    eventos = Evento.query.all()
     data = [
-        {'id': curso.id, 'titulo': curso.titulo, 'descripcion': curso.descripcion, 'profesor_id': curso.profesor_id}
-        for curso in cursos
+        {'id': e.id, 'nombre': e.nombre, 'ubicacion': e.ubicacion,
+         'fecha_hora': str(e.fecha_hora), 'capacidad': e.capacidad,
+         'descripcion': e.descripcion, 'organizador_id': e.organizador_id}
+        for e in eventos
     ]
     return jsonify(data), 200
 
-
-@main.route('/cursos/<int:id>', methods=['GET'])
-def listar_un_curso(id):
+@main.route('/eventos/<int:id>', methods=['GET'])
+def listar_un_evento(id):
     """
-    Retorna un solo curso por su ID (JSON).
+    Retorna un solo evento por su ID (JSON).
     """
-    curso = Curso.query.get_or_404(id)
-
+    e = Evento.query.get_or_404(id)
     data = {
-        'id': curso.id,
-        'titulo': curso.titulo,
-        'descripcion': curso.descripcion,
-        'profesor_id': curso.profesor_id
+        'id': e.id,
+        'nombre': e.nombre,
+        'ubicacion': e.ubicacion,
+        'fecha_hora': str(e.fecha_hora),
+        'capacidad': e.capacidad,
+        'descripcion': e.descripcion,
+        'organizador_id': e.organizador_id
     }
-
     return jsonify(data), 200
 
-
-@main.route('/cursos', methods=['POST'])
-def crear_curso():
+@main.route('/eventos', methods=['POST'])
+def crear_evento():
     """
-    Crea un curso sin validación.
-    Espera JSON con 'titulo', 'descripcion' y 'profesor_id'.
+    Crea un evento sin validación.
+    Espera JSON con 'nombre', 'ubicacion', 'fecha_hora', 'capacidad', 'descripcion', 'organizador_id'.
     """
     data = request.get_json()
-
     if not data:
         return jsonify({'error': 'No input data provided'}), 400
-
-    curso = Curso(
-        titulo=data.get('titulo'),
+    evento = Evento(
+        nombre=data.get('nombre'),
+        ubicacion=data.get('ubicacion'),
+        fecha_hora=datetime.strptime(data.get('fecha_hora'), '%Y-%m-%d %H:%M'),
+        capacidad=data.get('capacidad'),
         descripcion=data.get('descripcion'),
-        profesor_id=data.get('profesor_id')  # sin validación de usuario
+        organizador_id=data.get('organizador_id')
     )
-
-    db.session.add(curso)
+    db.session.add(evento)
     db.session.commit()
+    return jsonify({'message': 'Evento creado', 'id': evento.id}), 201
 
-    return jsonify({'message': 'Curso creado', 'id': curso.id, 'profesor_id': curso.profesor_id}), 201
-
-@main.route('/cursos/<int:id>', methods=['PUT'])
-def actualizar_curso(id):
+@main.route('/eventos/<int:id>', methods=['PUT'])
+def actualizar_evento(id):
     """
-    Actualiza un curso sin validación de usuario o permisos.
+    Actualiza un evento sin validación de usuario o permisos.
     """
-    curso = Curso.query.get_or_404(id)
+    e = Evento.query.get_or_404(id)
     data = request.get_json()
-
-    curso.titulo = data.get('titulo', curso.titulo)
-    curso.descripcion = data.get('descripcion', curso.descripcion)
-    curso.profesor_id = data.get('profesor_id', curso.profesor_id)
-
+    e.nombre = data.get('nombre', e.nombre)
+    e.ubicacion = data.get('ubicacion', e.ubicacion)
+    if data.get('fecha_hora'):
+        e.fecha_hora = datetime.strptime(data.get('fecha_hora'), '%Y-%m-%d %H:%M')
+    e.capacidad = data.get('capacidad', e.capacidad)
+    e.descripcion = data.get('descripcion', e.descripcion)
     db.session.commit()
+    return jsonify({'message': 'Evento actualizado', 'id': e.id}), 200
 
-    return jsonify({'message': 'Curso actualizado', 'id': curso.id}), 200
-
-@main.route('/cursos/<int:id>', methods=['DELETE'])
-def eliminar_curso(id):
+@main.route('/eventos/<int:id>', methods=['DELETE'])
+def eliminar_evento(id):
     """
-    Elimina un curso sin validación de permisos.
+    Elimina un evento sin validación de permisos.
     """
-    curso = Curso.query.get_or_404(id)
-    db.session.delete(curso)
+    e = Evento.query.get_or_404(id)
+    db.session.delete(e)
     db.session.commit()
-
-    return jsonify({'message': 'Curso eliminado', 'id': curso.id}), 200
+    return jsonify({'message': 'Evento eliminado', 'id': e.id}), 200

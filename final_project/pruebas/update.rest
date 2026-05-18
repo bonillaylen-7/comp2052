@@ -1,11 +1,10 @@
-### Editar un curso (POST)
+### Editar un evento (PUT)
 
-# Simular POST con nuevos datos del curso
-
-PUT http://localhost:5000/cursos/4
+PUT http://localhost:5000/eventos/3
 Content-Type: application/json
 
 {
-  "titulo": "Curso actualizado",
-  "descripcion": "Nueva descripción actualizada"
+  "nombre": "Concierto de Verano Actualizado",
+  "ubicacion": "Ponce, PR",
+  "capacidad": 150
 }

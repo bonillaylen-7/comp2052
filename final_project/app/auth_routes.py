@@ -13,34 +13,31 @@ def login():
     """
     form = LoginForm()
 
-    # Procesamiento del formulario si es enviado correctamente
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
 
-        # Verifica si el usuario existe y la contraseña es válida
         if user and user.check_password(form.password.data):
             login_user(user)
             return redirect(url_for('main.dashboard'))
 
-        # Mensaje si las credenciales no son válidas
-        flash('Invalid credentials')  # 🔁 Traducido
+        flash('Credenciales inválidas.')
 
-    # Renderiza el formulario de login
     return render_template('login.html', form=form)
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
     """
-    Registra un nuevo usuario y lo asocia por defecto al rol "Student".
-    """    
+    Registra un nuevo usuario y lo asocia al rol seleccionado.
+    """
     form = RegisterForm()
-    
-    # Procesa el formulario si fue enviado correctamente
-    if form.validate_on_submit():
-        # Buscar el rol por nombre seleccionado
-        role = Role.query.filter_by(name=form.role.data).first() # Puedes renombrar esto a 'Student' si cambias toda la app a inglés
 
-        # Crea el usuario con datos del formulario
+    if form.validate_on_submit():
+        print("FORMULARIO VALIDADO")
+        role = Role.query.filter_by(name=form.role.data).first()
+        if not role:
+            flash('Rol no encontrado.')
+            return render_template('register.html', form=form)
+
         user = User(
             username=form.username.data,
             email=form.email.data,
@@ -48,15 +45,14 @@ def register():
         )
         user.set_password(form.password.data)
 
-        # Guarda en la base de datos
         db.session.add(user)
         db.session.commit()
 
-        # Muestra mensaje de éxito
-        flash('User registered successfully.')
+        flash('Usuario registrado exitosamente.')
         return redirect(url_for('auth.login'))
-    
-    # Renderiza el formulario de registro
+    else:
+        print("NO VALIDO - Errores:", form.errors)
+
     return render_template('register.html', form=form)
 
 @auth.route('/logout')

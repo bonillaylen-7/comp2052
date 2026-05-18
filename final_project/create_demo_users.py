@@ -1,12 +1,11 @@
 from app import create_app, db
 from app.models import Role, User
-from werkzeug.security import generate_password_hash
 
 app = create_app()
 
 with app.app_context():
     # Asegurarse de que los roles existen
-    roles = ['Admin', 'Professor', 'Student']
+    roles = ['Participante', 'Organizador', 'Admin']
     for role_name in roles:
         existing_role = Role.query.filter_by(name=role_name).first()
         if not existing_role:
@@ -18,25 +17,25 @@ with app.app_context():
 
     # Diccionario con usuarios a insertar
     users_data = [
-        {
-            "username": "Administrator",
-            "email": "admin@example.com",
-            "password": "admin123",
-            "role_name": "Admin"
-        },
-        {
-            "username": "John Doe",
-            "email": "prof@example.com",
-            "password": "prof123",
-            "role_name": "Professor"
-        },
-        {
-            "username": "Steve Jobs",
-            "email": "student@example.com",
-            "password": "student123",
-            "role_name": "Student"
-        }
-    ]
+    {
+        "username": "admin_demo",
+        "email": "admin@eventos.com",
+        "password": "admin123",
+        "role_name": "Admin"
+    },
+    {
+        "username": "organizador_demo",
+        "email": "organizador@eventos.com",
+        "password": "organizador123",
+        "role_name": "Organizador"
+    },
+    {
+        "username": "participante_demo",
+        "email": "participante@eventos.com",
+        "password": "participante123",
+        "role_name": "Participante"
+    }
+]
 
     for user_info in users_data:
         existing_user = User.query.filter_by(email=user_info['email']).first()
@@ -47,7 +46,7 @@ with app.app_context():
                 email=user_info['email'],
                 role=role
             )
-            user.set_password(user_info['password'])  # Genera hash seguro
+            user.set_password(user_info['password'])
             db.session.add(user)
             print(f'✅ Usuario "{user.username}" creado con rol "{role.name}".')
         else:

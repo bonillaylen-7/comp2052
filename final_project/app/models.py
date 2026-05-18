@@ -27,8 +27,8 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(256), nullable=False)  # Asegura suficiente espacio para el hash
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=False)
 
-    # Relación con cursos (si es profesor)
-    cursos = db.relationship('Curso', backref='profesor', lazy=True)
+    # Relación con eventos (si es organizador)
+    eventos = db.relationship('Evento', backref='organizador', lazy=True)
 
     def set_password(self, password: str):
         """
@@ -42,11 +42,14 @@ class User(UserMixin, db.Model):
         """
         return check_password_hash(self.password_hash, password)
 
-# Modelo de curso asociado a un profesor
-class Curso(db.Model):
-    __tablename__ = 'curso'
+# Modelo de evento
+class Evento(db.Model):
+    __tablename__ = 'evento'
 
     id = db.Column(db.Integer, primary_key=True)
-    titulo = db.Column(db.String(100), nullable=False)
+    nombre = db.Column(db.String(150), nullable=False)
+    ubicacion = db.Column(db.String(200), nullable=False)
+    fecha_hora = db.Column(db.DateTime, nullable=False)
+    capacidad = db.Column(db.Integer, nullable=False)
     descripcion = db.Column(db.Text, nullable=False)
-    profesor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    organizador_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

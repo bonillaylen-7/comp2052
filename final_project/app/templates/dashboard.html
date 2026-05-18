@@ -1,14 +1,12 @@
-{% extends "layout.html" %} {% block title %}Dashboard{% endblock %} {% block
-content %}
+{% extends "layout.html" %} {% block title %}Dashboard{% endblock %} {% block content %}
 <div class="row">
   <div class="col">
-    <h3>Course Management</h3>
+    <h3>Administrador de Eventos</h3>
   </div>
   <div class="col text-end">
-    <!-- Change the next line for your project -->
-    {% if current_user.role.name != 'Student' %}
-    <a class="btn btn-primary mb-3 me-2" href="{{ url_for('main.cursos') }}">
-      <i class="bi bi-plus"></i> New
+    {% if current_user.role.name != 'Participante' %}
+    <a class="btn btn-primary mb-3 me-2" href="{{ url_for('main.eventos') }}">
+      <i class="bi bi-plus"></i> Nuevo Evento
     </a>
     {% endif %}
   </div>
@@ -17,40 +15,37 @@ content %}
 <table class="table table-bordered table-hover">
   <thead class="table-light">
     <tr>
-      <th>Title</th>
-      <th>Description</th>
-      <th>Instructor</th>
-      <th class="text-center">Actions</th>
+      <th>Nombre</th>
+      <th>Ubicación</th>
+      <th>Fecha y Hora</th>
+      <th>Capacidad</th>
+      <th>Descripción</th>
+      <th>Organizador</th>
+      <th class="text-center">Acciones</th>
     </tr>
   </thead>
   <tbody>
-    {% for curso in cursos %}
+    {% for evento in eventos %}
     <tr>
-      <td>{{ curso.titulo }}</td>
-      <td>{{ curso.descripcion }}</td>
-      <td>{{ curso.profesor.username }}</td>
+      <td>{{ evento.nombre }}</td>
+      <td>{{ evento.ubicacion }}</td>
+      <td>{{ evento.fecha_hora.strftime('%Y-%m-%d %H:%M') }}</td>
+      <td>{{ evento.capacidad }}</td>
+      <td>{{ evento.descripcion }}</td>
+      <td>{{ evento.organizador.username }}</td>
       <td class="text-center ps-0 pe-0">
-        {% if current_user.role.name == 'Admin' or curso.profesor_id ==
-        current_user.id %}
-
-        <a
-          class="btn btn-sm btn-warning"
-          href="{{ url_for('main.editar_curso', id=curso.id) }}"
-          title="Edit course"
-        >
+        {% if current_user.role.name == 'Admin' or evento.organizador_id == current_user.id %}
+        <a class="btn btn-sm btn-warning"
+          href="{{ url_for('main.editar_evento', id=evento.id) }}"
+          title="Editar evento">
           <i class="bi bi-pencil"></i>
         </a>
-        <form
-          method="POST"
-          action="{{ url_for('main.eliminar_curso', id=curso.id) }}"
+        <form method="POST"
+          action="{{ url_for('main.eliminar_evento', id=evento.id) }}"
           style="display: inline"
-          onsubmit="return confirm('Are you sure you want to delete this course?');"
-        >
-          <button
-            type="submit"
-            class="btn btn-sm btn-danger"
-            title="Delete course"
-          >
+          onsubmit="return confirm('¿Estás seguro de que quieres eliminar este evento?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm btn-danger" title="Eliminar evento">
             <i class="bi bi-trash"></i>
           </button>
         </form>
@@ -63,9 +58,8 @@ content %}
   </tbody>
 </table>
 
-<!-- Change the next line for your project -->
-{% if current_user.role.name == 'Student' %}
+{% if current_user.role.name == 'Participante' %}
 <p class="text-center pe-3 mt-0 text-body-tertiary fw-lighter fst-italic">
-  You do not have permission to create, update or delete courses.
+  No tienes permiso para crear, actualizar o eliminar eventos.
 </p>
 {% endif %} {% endblock %}
